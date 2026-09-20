@@ -1,0 +1,15 @@
+# Compiled C++ executables
+simulator/robot_simulator
+
+# Build directories
+build/
+
+# IDE / editor files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Environment files
+.env
