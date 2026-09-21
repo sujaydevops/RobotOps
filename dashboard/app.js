@@ -1,42 +1,107 @@
-const robots = [
-    { id: "RBT-001", battery: 98, temperature: 36.2, speed: 1.2, status: "ONLINE" },
-    { id: "RBT-002", battery: 91, temperature: 38.5, speed: 0.8, status: "ONLINE" },
-    { id: "RBT-003", battery: 87, temperature: 40.1, speed: 1.5, status: "ONLINE" },
-    { id: "RBT-004", battery: 79, temperature: 42.3, speed: 0.6, status: "ONLINE" },
-    { id: "RBT-005", battery: 95, temperature: 35.8, speed: 1.1, status: "ONLINE" }
-];
+const TELEMETRY_FILE = "telemetry.csv";
+const REFRESH_INTERVAL = 2000;
 
-function determineStatus(robot) {
-    if (robot.battery < 20 || robot.temperature > 55) {
-        return "CRITICAL";
+let previousStatuses = {};
+let initialized = false;
+
+async function loadTelemetry() {
+    try {
+        const response = await fetch(
+            `${TELEMETRY_FILE}?t=${Date.now()}`,
+            { cache: "no-store" }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const csv = await response.text();
+        const robots = parseTelemetry(csv);
+
+        if (robots.length === 0) {
+            throw new Error("No telemetry records found");
+        }
+
+        renderRobots(robots);
+        updateSummary(robots);
+        detectStatusChanges(robots);
+
+        const updateElement = document.getElementById("last-update");
+
+        if (updateElement) {
+            updateElement.textContent =
+                `Last telemetry update: ${new Date().toLocaleTimeString()}`;
+        }
+
+        if (!initialized) {
+            addEvent("C++ telemetry stream connected");
+            addEvent(`${robots.length} robots detected`);
+            initialized = true;
+        }
+
+    } catch (error) {
+        console.error("Telemetry error:", error);
+
+        const updateElement = document.getElementById("last-update");
+
+        if (updateElement) {
+            updateElement.textContent = "Telemetry connection error";
+        }
     }
-
-    if (robot.battery < 40 || robot.temperature > 48) {
-        return "WARNING";
-    }
-
-    return "ONLINE";
 }
 
-function updateRobot(robot) {
-    robot.battery -= Math.random() * 0.25;
+function parseTelemetry(csv) {
+    const lines = csv.trim().split(/\r?\n/);
 
-    robot.temperature += (Math.random() - 0.5) * 1.2;
+    if (lines.length < 2) {
+        return [];
+    }
 
-    robot.speed = Math.max(
-        0,
-        robot.speed + (Math.random() - 0.5) * 0.5
-    );
+    const latest = new Map();
 
-    robot.battery = Math.max(0, robot.battery);
+    for (let i = 1; i < lines.length; i++) {
+        const columns = lines[i].split(",");
 
-    robot.status = determineStatus(robot);
+        if (columns.length < 9) {
+            continue;
+        }
+
+        const robot = {
+            timestamp: columns[0].trim(),
+            id: columns[1].trim(),
+            battery: Number(columns[2]),
+            temperature: Number(columns[3]),
+            speed: Number(columns[4]),
+            xPosition: Number(columns[5]),
+            yPosition: Number(columns[6]),
+            status: columns[7].trim(),
+            errorCode: columns[8].trim()
+        };
+
+        if (
+            !robot.id ||
+            !Number.isFinite(robot.battery) ||
+            !Number.isFinite(robot.temperature) ||
+            !Number.isFinite(robot.speed)
+        ) {
+            continue;
+        }
+
+        // Since the CSV is chronological, later rows replace
+        // earlier rows for the same robot.
+        latest.set(robot.id, robot);
+    }
+
+    return Array.from(latest.values())
+        .sort((a, b) => a.id.localeCompare(b.id));
 }
 
-function renderRobots() {
+function renderRobots(robots) {
     const container = document.getElementById("robot-grid");
 
-    if (!container) return;
+    if (!container) {
+        return;
+    }
 
     container.innerHTML = "";
 
@@ -49,6 +114,7 @@ function renderRobots() {
         card.innerHTML = `
             <div class="robot-header">
                 <div class="robot-name">${robot.id}</div>
+
                 <span class="badge ${statusClass}">
                     ${robot.status}
                 </span>
@@ -78,9 +144,24 @@ function renderRobots() {
                 </div>
 
                 <div class="metric">
-                    <div class="metric-label">STATE</div>
+                    <div class="metric-label">POSITION</div>
                     <div class="metric-value">
-                        ${robot.status}
+                        (${robot.xPosition.toFixed(2)},
+                        ${robot.yPosition.toFixed(2)})
+                    </div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-label">ERROR CODE</div>
+                    <div class="metric-value">
+                        ${robot.errorCode}
+                    </div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-label">TELEMETRY TIME</div>
+                    <div class="metric-value">
+                        ${robot.timestamp}
                     </div>
                 </div>
 
@@ -89,51 +170,58 @@ function renderRobots() {
 
         container.appendChild(card);
     });
-
-    updateSummary();
 }
 
-function updateSummary() {
-    const online = robots.filter(r => r.status === "ONLINE").length;
-    const warning = robots.filter(r => r.status === "WARNING").length;
-    const critical = robots.filter(r => r.status === "CRITICAL").length;
+function updateSummary(robots) {
+    const online =
+        robots.filter(robot => robot.status === "ONLINE").length;
 
-    const avgBattery =
-        robots.reduce((sum, robot) => sum + robot.battery, 0) /
-        robots.length;
+    const alerts =
+        robots.filter(robot =>
+            robot.status === "WARNING" ||
+            robot.status === "CRITICAL"
+        ).length;
 
-    const totalElement = document.getElementById("total-robots");
-    const onlineElement = document.getElementById("online-robots");
-    const alertElement = document.getElementById("alerts");
-    const batteryElement = document.getElementById("avg-battery");
-    const updateElement = document.getElementById("last-update");
+    const averageBattery =
+        robots.reduce(
+            (total, robot) => total + robot.battery,
+            0
+        ) / robots.length;
 
-    if (totalElement) {
-        totalElement.textContent = robots.length;
-    }
+    setText("total-robots", robots.length);
+    setText("online-robots", online);
+    setText("alerts", alerts);
+    setText("avg-battery", `${averageBattery.toFixed(1)}%`);
+}
 
-    if (onlineElement) {
-        onlineElement.textContent = online;
-    }
+function detectStatusChanges(robots) {
+    robots.forEach(robot => {
+        const previous = previousStatuses[robot.id];
 
-    if (alertElement) {
-        alertElement.textContent = warning + critical;
-    }
+        if (previous && previous !== robot.status) {
+            addEvent(
+                `${robot.id} changed from ${previous} to ${robot.status}`
+            );
+        }
 
-    if (batteryElement) {
-        batteryElement.textContent = `${avgBattery.toFixed(1)}%`;
-    }
+        previousStatuses[robot.id] = robot.status;
+    });
+}
 
-    if (updateElement) {
-        updateElement.textContent =
-            `Last update: ${new Date().toLocaleTimeString()}`;
+function setText(id, value) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.textContent = value;
     }
 }
 
 function addEvent(message) {
     const eventLog = document.getElementById("event-log");
 
-    if (!eventLog) return;
+    if (!eventLog) {
+        return;
+    }
 
     const event = document.createElement("div");
     event.className = "event";
@@ -155,26 +243,6 @@ function addEvent(message) {
     }
 }
 
-function simulationCycle() {
-    robots.forEach(robot => {
-        const previousStatus = robot.status;
+loadTelemetry();
 
-        updateRobot(robot);
-
-        if (previousStatus !== robot.status) {
-            addEvent(
-                `${robot.id} changed from ${previousStatus} to ${robot.status}`
-            );
-        }
-    });
-
-    renderRobots();
-}
-
-renderRobots();
-
-addEvent("RobotOps monitoring system initialized");
-addEvent("Telemetry stream connected");
-addEvent("5 robots registered with fleet controller");
-
-setInterval(simulationCycle, 2000);
+setInterval(loadTelemetry, REFRESH_INTERVAL);
