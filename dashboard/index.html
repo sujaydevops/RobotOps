@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RobotOps | Fleet Monitoring</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <div>
+            <h1>RobotOps</h1>
+            <p>Robotics Fleet Monitoring & Telemetry</p>
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            SYSTEM ONLINE
+        </div>
+    </header>
+
+    <main>
+        <section class="summary">
+            <div class="summary-card">
+                <span>ROBOTS</span>
+                <strong>5</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>ONLINE</span>
+                <strong id="online-count">5</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>WARNINGS</span>
+                <strong id="warning-count">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>AVG BATTERY</span>
+                <strong id="avg-battery">98%</strong>
+            </div>
+        </section>
+
+        <section class="fleet">
+            <div class="section-heading">
+                <div>
+                    <h2>Robot Fleet</h2>
+                    <p>Live simulated telemetry</p>
+                </div>
+
+                <span id="last-update">Waiting for telemetry...</span>
+            </div>
+
+            <div id="robot-grid" class="robot-grid"></div>
+        </section>
+
+        <section class="event-panel">
+            <div class="section-heading">
+                <div>
+                    <h2>Operations Log</h2>
+                    <p>Recent monitoring events</p>
+                </div>
+            </div>
+
+            <div id="event-log" class="event-log"></div>
+        </section>
+    </main>
+
+    <footer>
+        RobotOps • C++17 Robotics Telemetry Simulation
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
