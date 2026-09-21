@@ -13,3 +13,11 @@ build/
 
 # Environment files
 .env
+
+
+# RobotOps generated files
+telemetry.csv
+simulator/robot_simulator
+
+# Build artifacts
+*.o
