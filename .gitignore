@@ -21,3 +21,11 @@ simulator/robot_simulator
 
 # Build artifacts
 *.o
+
+# RobotOps generated files
+telemetry.csv
+simulator/robot_simulator
+simulator/robotops
+
+# Build artifacts
+*.o

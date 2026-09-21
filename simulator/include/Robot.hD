@@ -1,0 +1,35 @@
+
+#ifndef ROBOT_H
+#define ROBOT_H
+
+#include <string>
+
+class Robot {
+private:
+    std::string id;
+    double battery;
+    double temperature;
+    double speed;
+    double xPosition;
+    double yPosition;
+    std::string status;
+    std::string errorCode;
+
+public:
+    explicit Robot(const std::string& robotId);
+
+    void update();
+    void evaluateHealth();
+
+    std::string getId() const;
+    double getBattery() const;
+    double getTemperature() const;
+    double getSpeed() const;
+    double getXPosition() const;
+    double getYPosition() const;
+    std::string getStatus() const;
+    std::string getErrorCode() const;
+};
+
+#endif
+
