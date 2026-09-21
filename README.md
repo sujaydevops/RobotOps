@@ -1,92 +1,182 @@
-# RobotOps
+# 🤖 RobotOps
 
-A Linux-based robotics testing and telemetry platform built as a computer science portfolio project.
+A Linux-based robotics monitoring and telemetry simulation system built with modern C++.
+
+RobotOps simulates multiple robots, generates changing telemetry data, evaluates robot health, and displays operational status in real time. The project is designed to demonstrate practical C++ development, Linux workflows, object-oriented programming, telemetry handling, and Git-based software engineering.
 
 ## Overview
 
-RobotOps simulates robotic operations and generates telemetry data such as battery level, temperature, speed, position, and operational status.
+Robotics systems depend on continuous monitoring of operational data such as battery level, temperature, movement speed, and system health.
 
-The project is being developed incrementally to explore systems programming, backend development, Linux, databases, testing, and DevOps practices.
+RobotOps provides a lightweight simulation of that workflow.
 
-## Current Version — v0.1
+The application manages multiple simulated robots and continuously updates their telemetry while evaluating their current operating status.
 
-The first version includes a C++ robot simulator capable of:
+## Features
 
-- Generating simulated robot telemetry
-- Tracking battery consumption
-- Simulating temperature changes
-- Generating robot movement and speed
-- Tracking X/Y position
-- Detecting warning and critical temperature conditions
-- Running continuously at timed intervals
+- Multi-robot telemetry simulation
+- Real-time battery monitoring
+- Temperature monitoring
+- Robot speed tracking
+- Position tracking
+- Automated health evaluation
+- Operational status reporting
+- Error-code support
+- Structured telemetry logging
+- Continuous monitoring loop
+- Modular C++ architecture
 
-## Technologies
+## Example Output
 
-- C++
-- Linux
-- Git
-
-Planned technologies:
-
-- Java
-- Spring Boot
-- PostgreSQL
-- REST APIs
-- Docker
-- GitHub Actions
-- Cloud deployment
+```text
+RBT-001 | ONLINE | Battery: 98.51% | Temp: 38.08 C | Speed: 1.11 m/s
+RBT-002 | ONLINE | Battery: 98.96% | Temp: 36.70 C | Speed: 1.13 m/s
+RBT-003 | ONLINE | Battery: 98.56% | Temp: 36.50 C | Speed: 1.99 m/s
+RBT-004 | ONLINE | Battery: 98.65% | Temp: 34.85 C | Speed: 0.35 m/s
+RBT-005 | ONLINE | Battery: 98.56% | Temp: 35.56 C | Speed: 1.86 m/s
+```
 
 ## Architecture
 
-Current architecture:
+RobotOps separates robot behavior, telemetry logging, and application control into individual components.
 
-C++ Robot Simulator
-        |
-        v
-Robot Telemetry
+```text
+RobotOps
+│
+├── Robot
+│   ├── telemetry state
+│   ├── simulated updates
+│   └── health evaluation
+│
+├── TelemetryLogger
+│   └── telemetry recording
+│
+└── Main Application
+    ├── manages robot fleet
+    ├── updates telemetry
+    └── displays system status
+```
 
-Future architecture:
+This structure keeps the project modular and makes it easier to extend with additional robotics functionality.
 
-C++ Robot Simulator
-        |
-        v
-Java REST API
-        |
-        v
-PostgreSQL
-        |
-        v
-Web Dashboard
+## Project Structure
 
-## Build and Run
+```text
+RobotOps/
+├── simulator/
+│   ├── include/
+│   │   ├── Robot.h
+│   │   └── TelemetryLogger.h
+│   │
+│   └── src/
+│       ├── Robot.cpp
+│       ├── TelemetryLogger.cpp
+│       └── main.cpp
+│
+├── .gitignore
+└── README.md
+```
+
+## Technologies
+
+- C++17
+- Linux
+- GNU g++
+- Git
+- GitHub
+- SSH
+- Object-Oriented Programming
+
+## Build
+
+Clone the repository:
+
+```bash
+git clone git@github.com:sujaydevops/RobotOps.git
+cd RobotOps
+```
 
 Compile:
 
-    g++ simulator/robot_simulator.cpp -o simulator/robot_simulator
+```bash
+g++ -std=c++17 -I simulator/include \
+simulator/src/main.cpp \
+simulator/src/Robot.cpp \
+simulator/src/TelemetryLogger.cpp \
+-o simulator/robotops
+```
 
-Run:
+## Run
 
-    ./simulator/robot_simulator
+```bash
+./simulator/robotops
+```
 
-Stop the simulator with Ctrl+C.
+Use:
 
-## Roadmap
+```text
+Ctrl + C
+```
 
-- [x] Build initial C++ robot simulator
-- [x] Generate basic telemetry
-- [ ] Add structured telemetry logging
-- [ ] Support multiple robots
-- [ ] Build Java backend
-- [ ] Create REST API
-- [ ] Integrate PostgreSQL
-- [ ] Build operations dashboard
-- [ ] Add automated tests
-- [ ] Containerize with Docker
-- [ ] Add CI/CD
-- [ ] Deploy application
+to stop the simulation.
 
-## Purpose
+## Core Components
 
-RobotOps is a student engineering project focused on learning how multiple software components can work together to create a larger system.
+### Robot
 
-The project will evolve as I continue studying C++, Java, Linux, software engineering, and backend development.
+The `Robot` class represents an individual simulated robot and maintains information including:
+
+- Robot ID
+- Battery level
+- Temperature
+- Speed
+- X/Y position
+- Operational status
+- Error code
+
+Each robot updates its simulated telemetry and evaluates its operating condition.
+
+### TelemetryLogger
+
+The telemetry logger separates telemetry recording from robot behavior, providing a cleaner application architecture.
+
+### Main Application
+
+The main application creates and manages the robot fleet, updates each robot, evaluates system health, logs telemetry, and displays current operating information.
+
+## Engineering Concepts Demonstrated
+
+This project demonstrates practical use of:
+
+- C++ classes and encapsulation
+- Header/source file separation
+- Object-oriented design
+- Collections of objects
+- Randomized simulation
+- File I/O
+- Continuous program execution
+- Modular software architecture
+- Linux command-line development
+- Git version control
+- SSH-based GitHub workflow
+
+## Future Improvements
+
+Planned extensions include:
+
+- Automated unit testing
+- Persistent telemetry storage
+- Historical telemetry analysis
+- Configurable alert thresholds
+- Additional simulated robot sensors
+- Backend API integration
+- Web-based monitoring dashboard
+
+## Author
+
+**Sujay Gupta**
+
+Computer Science Student  
+City College of San Francisco
+
+GitHub: `@sujaydevops`
